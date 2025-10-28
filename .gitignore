@@ -1,2 +1,9 @@
 *.exe
 .vscode/*
+
+a.cpp
+b.cpp
+tmp.cpp
+
+in.txt
+out.txt
