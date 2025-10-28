@@ -1,6 +1,9 @@
 *.exe
 .vscode/*
 
+a
+b
+stress_testing
 a.cpp
 b.cpp
 tmp.cpp
