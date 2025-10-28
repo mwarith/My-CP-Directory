@@ -3,58 +3,7 @@ using namespace std;
 #include "ext/pb_ds/assoc_container.hpp"
 using namespace __gnu_pbds;
 
-auto tt = clock();
-
-const int N = 1E7 + 5;
-int phi[N + 1];
-
-struct Compare {
-    bool operator()(const pair<int, int> &a, const pair<int, int> &b) const {
-        return 1LL * a.first * b.second < 1LL * b.first * a.second;
-    }
-};
-map<pair<int, int>, vector<int>, Compare> m;
-
-int fre[10]{};
-bool check(int s, int t) {
-    memset(fre, 0, sizeof(fre));
-    while (s > 0) {
-        fre[s % 10]++;
-        s /= 10;
-    }
-    while (t > 0) {
-        fre[t % 10]--;
-        t /= 10;
-    }
-
-    for (int i = 0; i < 10; ++i) {
-        if (fre[i] != 0) return false;
-    }
-    return true;
-}
-void init() {
-    for (int i = 0; i <= N; i++) {
-        phi[i] = i;
-    }
-
-    for (int i = 2; i <= N; i++) {
-        if (phi[i] == i) {
-            for (int j = i; j <= N; j += i) {
-                phi[j] -= phi[j] / i;
-            }
-        }
-
-        if (check(i, phi[i])) {
-            int g = __gcd(i, phi[i]);
-            m[{i / g, phi[i] / g}].emplace_back(i);
-        }
-    }
-
-    for (auto &pair : m) {
-        sort(pair.second.begin(), pair.second.end());
-    }
-}
-
+auto TTT = clock();
 namespace stress_test {
     mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
     int64_t rand(int64_t l, int64_t r) {
@@ -86,44 +35,12 @@ namespace stress_test {
     } cout;
 
     void generate() {
-        cout << rand(1, 10000);
     }
 
     void brute() {
-        int n;
-        cin >> n;
-
-        int64_t best_N = -1, best_Phi = 1;
-        for (int i = 3; i < n; i++) {
-            int phi_N = phi[i];
-            if (check(i, phi_N) && (best_N == -1 || i * best_Phi <= best_N * phi_N)) {
-                best_N = i;
-                best_Phi = phi_N;
-            }
-        }
-
-        if (best_N == -1) {
-            cout << "No solution.";
-        } else {
-            cout << best_N;
-        }
     }
 
     void ac() {
-        int n;
-        cin >> n;
-
-        for (auto &x : m) {
-            auto &v = x.second;
-            auto it = upper_bound(v.begin(), v.end(), n - 1);
-            if (it != v.begin()) {
-                it = prev(it);
-            }
-            if (*it < n) {
-                return cout << *it, void();
-            }
-        }
-        cout << "No solution.";
     }
 
     void stress_test(int T = 5E4) {
@@ -140,8 +57,8 @@ namespace stress_test {
             }
         }
         cout << "✅Accepted✅";
-        cerr << "Time: " << (clock() - tt) * 1000 / CLOCKS_PER_SEC << " ms\n";
-        exit(0);
+        cerr << "Time: " << (clock() - TTT) * 1000 / CLOCKS_PER_SEC << " ms\n";
+        return;
     }
 }
 

@@ -169,80 +169,211 @@ bool is_prime(u64 n, int iter = 5) {
 }
 
 /************************ Sieve ************************/
-/************************ Everything Sieve **************/
-const int N = 1e6 + 5, mod = 1e9 + 7;
-int phi[N], spf[N];
-bitset<N> is_prime;
-void sieve_all() {
-    is_prime.set();
-    is_prime[0] = is_prime[1] = false;
-    for (int i = 1; i < N; i++) {
-        phi[i] = spf[i] = i;
-    }
-    for (int i = 2; i < N; i++) {
-        if (is_prime[i]) {
-            for (int j = i; j < N; j += i) {
-                if (i != j) {
-                    is_prime[j] = false;
+
+namespace sieve {
+    vector<bool> is_prime(int N) {
+        vector<int> _primes;
+        vector<bool> _is_prime(N + 1, 1);
+        _is_prime[0] = _is_prime[1] = 0;
+        for (int64_t i = 1; i <= N; i++) {
+            if (_is_prime[i]) {
+                _primes.emplace_back(i);
+            }
+            for (auto it : _primes) {
+                if (i * it > N) {
+                    break;
                 }
-                if (spf[j] == j) {
-                    spf[j] = i;
+                _is_prime[i * it] = 0;
+                if (i % it == 0) {
+                    break;
                 }
-                phi[j] -= phi[j] / i;
             }
         }
+        return _is_prime;
+    }
+
+    vector<int> primes(int N) {
+        vector<int> _primes;
+        vector<bool> _is_prime(N + 1, 1);
+        _is_prime[0] = _is_prime[1] = 0;
+        for (int64_t i = 1; i <= N; i++) {
+            if (_is_prime[i]) {
+                _primes.emplace_back(i);
+            }
+            for (auto it : _primes) {
+                if (i * it > N) {
+                    break;
+                }
+                _is_prime[i * it] = 0;
+                if (i % it == 0) {
+                    break;
+                }
+            }
+        }
+        return _primes;
+    }
+
+    vector<int> mobius(int N) {
+        vector<int> _primes, mob(N + 1, 1);
+        vector<bool> _is_prime(N + 1, 1);
+        _is_prime[0] = _is_prime[1] = 0;
+        for (int64_t i = 1; i <= N; i++) {
+            if (_is_prime[i]) {
+                mob[i] = -1;
+                _primes.emplace_back(i);
+            }
+            for (auto it : _primes) {
+                if (i * it > N) {
+                    break;
+                }
+                mob[i * it] = !!(i % it) * -mob[i];
+                _is_prime[i * it] = 0;
+                if (i % it == 0) {
+                    break;
+                }
+            }
+        }
+        return mob;
+    }
+
+    vector<bool> segmented_sieve(int64_t l, int64_t r) {
+        vector<bool> primes_seg(r - l + 1, 1);
+        if (l <= 1 && 1 <= r) {
+            primes_seg[1 - l] = 0;
+        }
+        vector<int> prime = primes((int)sqrt(r));
+        for (auto it : prime) {
+            int64_t start = l / it * it + (l % it ? it : 0);
+            for (int64_t i = start; i <= r; i += it) {
+                if (i != it) {
+                    primes_seg[i - l] = 0;
+                }
+            }
+        }
+        return primes_seg;
+    }
+
+    vector<int> spf(int N) {
+        vector<int> _primes;
+        vector<int> _spf(N + 1, 0);
+        iota(_spf.begin(), _spf.end(), 0);
+        for (int64_t i = 2; i <= N; i++) {
+            if (_spf[i] == i) {
+                _primes.emplace_back(i);
+            }
+            for (auto it : _primes) {
+                if (i * it > N) {
+                    break;
+                }
+                _spf[i * it] = min(it, _spf[i]);
+                if (i % it == 0) {
+                    break;
+                }
+            }
+        }
+        return _spf;
+    }
+
+    vector<vector<int>> factors(int N) {
+        auto _spf = spf(N);
+        vector<vector<int>> fact(N + 1);
+        for (int i = 1; i <= N; i++) {
+            int cur = i;
+            while (1 < cur) {
+                fact[i].emplace_back(_spf[cur]);
+                cur /= _spf[cur];
+            }
+        }
+        return fact;
+    }
+
+    vector<vector<pair<int, int>>> factors_cnt(int N) {
+        auto _spf = spf(N);
+        vector<vector<pair<int, int>>> fact(N + 1);
+        for (int i = 1; i <= N; i++) {
+            int cur = i;
+            vector<int> v;
+            while (cur > 1) {
+                if (v.empty() || _spf[cur] != v.back()) {
+                    v.emplace_back(_spf[cur]);
+                }
+                cur /= _spf[cur];
+            }
+
+            cur = i;
+            for (auto &p : v) {
+                int cnt = 0;
+                while (cur % p == 0) {
+                    cur /= p;
+                    ++cnt;
+                }
+                if (cnt) {
+                    fact[i].emplace_back(p, cnt);
+                }
+            }
+        }
+        return fact;
+    }
+
+    vector<vector<int>> divs(int N) {
+        vector<vector<int>> divisors(N + 1);
+        for (int i = 1; i <= N; i++) {
+            for (int j = i; j <= N; j += i) {
+                divisors[j].emplace_back(i);
+            }
+        }
+        return divisors;
+    }
+
+    vector<int> phi(int N) {
+        vector<int> _phi(N + 1);
+        iota(_phi.begin(), _phi.end(), 0);
+        for (int i = 1; i <= N; i++) {
+            for (int j = 2 * i; j <= N; j += i) {
+                _phi[j] -= _phi[i];
+            }
+        }
+        return _phi;
+    }
+
+    vector<int> next_prime(int N) {
+        N += 1000;
+        auto _is_prime = is_prime(N);
+        vector<int> _next_prime(N + 1, 0);
+        int last = 1e9 + 7;
+        for (int i = N; ~i; i--) {
+            _next_prime[i] = last;
+            if (_is_prime[i]) {
+                last = i;
+            }
+        }
+        return _next_prime;
     }
 }
 
-/*********************** Linear Sieve ***************************/
-
-const int N = 1e6;
-vector<int> spf(N + 1), primes;
-void linear_sieve() {
-    for (int i = 2; i <= N; ++i) {
-        if (spf[i] == 0) {
-            spf[i] = i;
+/************************ Linear Phi **************/
+const int N = 1E7;
+int phi[N + 1]{}, spf[N + 1]{};
+void calc() {
+    vector<int> primes;
+    for (int i = 1; i <= N; ++i) {
+        spf[i] = phi[i] = i;
+    }
+    for (int64_t i = 2; i <= N; i++) {
+        if (spf[i] == i) {
             primes.emplace_back(i);
+            phi[i] = i - 1;
         }
-        for (int j = 0; i * primes[j] <= N; ++j) {
-            spf[i * primes[j]] = primes[j];
-            if (primes[j] == spf[i]) {
+        for (auto pr : primes) {
+            if (1LL * i * pr > N) {
                 break;
             }
-        }
-    }
-}
-
-/*********************** Normal Sieve ***************************/
-const int N = 1e7 + 5;
-bitset<N> is_prime;
-void sieve() {
-    is_prime.set();
-    is_prime[0] = is_prime[1] = false;
-    for (int i = 2; i <= N / i; i++) {
-        if (is_prime[i]) {
-            for (int j = i * i; j < N; j += i) {
-                is_prime[j] = false;
-            }
-        }
-    }
-}
-
-/************************ SPF ************************/
-// sieve SPF
-const int N = 1e7 + 5;
-int spf[N];
-void sieveSPF() {
-    for (int i = 1; i < N; ++i) {
-        spf[i] = (i & 1 ? i : 2);
-    }
-
-    for (int i = 3; i < N / i; i++) {
-        if (spf[i] == i) {
-            for (int j = i * i; j < N; j += i) {
-                if (spf[j] == j) {
-                    spf[j] = i;
-                }
+            spf[i * pr] = min(pr, spf[i]);
+            if (i % pr == 0) {
+                phi[i * pr] = phi[i] * pr;
+                break;
+            } else {
+                phi[i * pr] = phi[i] * phi[pr];
             }
         }
     }
@@ -267,7 +398,6 @@ bool fast_prime(int64_t x) {
 }
 
 /************************ Fast Power ************************/
-
 int64_t power(int64_t b, int64_t n, const int MOD = mod) {
     b %= MOD;
     int64_t s = 1;
@@ -317,42 +447,68 @@ int64_t sum_of_divisors(int64_t n) {
     return ans;
 }
 
-/************************ Get Divisors from Prime Factorization ************************/
-vector<pair<int, int>> fact;
-set<int> divisors;
-
-// get prime factorization
-vector<pair<int, int>> prime_fact(int64_t n) {
-    vector<pair<int, int>> ret;
-    for (int i = 2; i <= n / i; i++) {
-        int cnt = 0;
-        while (n % i == 0) {
-            n /= i;
-            cnt++;
+/************************ get divs from factors in cbrt(N) ************************/
+const int N = 1e6 + 5;
+vector<int> calc(int N) {
+    vector<int> _primes, _spf(N + 1, 0);
+    iota(_spf.begin(), _spf.end(), 0);
+    for (long long i = 2; i <= N; i++) {
+        if (_spf[i] == i) {
+            _primes.push_back(i);
         }
-        if (cnt) {
-            ret.emplace_back(i, cnt);
+        for (auto it : _primes) {
+            if (i * it > N) {
+                break;
+            }
+            _spf[i * it] = min(it, _spf[i]);
+            if (i % it == 0) {
+                break;
+            }
         }
     }
-    if (n > 1) {
-        ret.emplace_back(n, 1);
+    return _spf;
+}
+
+vector<int> spf = calc(N);
+vector<int> factors(int n) {
+    vector<int> ret;
+    int cur = n;
+    while (cur > 1) {
+        ret.push_back(spf[cur]);
+        cur /= spf[cur];
     }
     return ret;
 }
 
-void get_divisors(int64_t ind, int64_t div) {
-    if (ind == fact.size()) {
-        return void(divisors.insert(div));
+vector<int> divisors(int n) {
+    auto fact = factors(n);
+    vector<array<int, 2>> p;
+    for (auto &it : fact) {
+        if (p.empty() || p.back()[0] != it) {
+            p.push_back({it, 1});
+        } else {
+            p.back()[1]++;
+        }
     }
-    for (int i = 0; i <= fact[ind].second; ++i) {
-        get_divisors(ind + 1, div);
-        div *= fact[ind].first;
-    }
+    vector<int> ret;
+    function<void(int, int)> build = [&](int i, int res) {
+        if (i == p.size()) {
+            ret.push_back(res);
+            return;
+        }
+        int x = 1, itr = p[i][1] + 1;
+        while (itr--) {
+            build(i + 1, res * x);
+            x *= p[i][0];
+        }
+    };
+    build(0, 1);
+    sort(ret.begin(), ret.end());
+    return ret;
 }
 
 /************************ Phi (Euler's Totient) ************************/
-
-int64_t Phi(int64_t n) { // O(sqrt(n))
+int64_t phi(int64_t n) {
     int64_t ans = n;
     for (int64_t p = 2; p <= n / p; p++) {
         if (n % p == 0) {
@@ -366,44 +522,6 @@ int64_t Phi(int64_t n) { // O(sqrt(n))
         ans -= ans / n;
     }
     return ans;
-}
-
-const int N = 1e7 + 5;
-int phi[N];
-void phi_sieve() { // O(n * log(log(n)))
-    for (int i = 1; i < N; i++) {
-        phi[i] = i;
-    }
-    for (int i = 2; i < N; i++) {
-        if (phi[i] == i) {
-            for (int j = i; j < N; j += i) {
-                phi[j] -= phi[j] / i;
-            }
-        }
-    }
-}
-
-/*
-    another version computes it by subtracting the phi of its divisors
-    example:
-    let  n = 10
-    its divisors is 1 , 2 , 5 , 10
-    n = phi[1] + phi[2] + phi[5] + phi[10]
-    then phi[n] = n - (phi[1] + phi[2] + phi[5])
-*/
-void phi_1_to_n() { // O(n * log(n) )
-    vector<int> phi(N + 1);
-    phi[0] = 0;
-    phi[1] = 1;
-    for (int i = 2; i < N; i++) {
-        phi[i] = i - 1;
-    }
-
-    for (int i = 2; i < N; i++) {
-        for (int j = 2 * i; j < N; j += i) {
-            phi[j] -= phi[i];
-        }
-    }
 }
 
 /************************ Linear Diophantine Equation ************************/
@@ -547,26 +665,4 @@ int mobius(int64_t n) {
         ans = -ans;
     }
     return ans;
-}
-
-// Sieve Moebuis
-const int N = 1e6 + 5;
-bitset<N> is_prime;
-int mobuis[N];
-void moebiusSieve() {
-    is_prime.set();
-    is_prime[0] = is_prime[1] = false;
-    mobuis[1] = 1;
-    for (int i = 2; i < N; ++i) {
-        mobuis[i] = 1;
-    }
-    for (int i = 2; i < N; i++) {
-        if (is_prime[i]) {
-            mobuis[i] = -1;
-            for (int j = 2 * i; j < N; j += i) {
-                is_prime[j] = false;
-                mobuis[j] = (j % (i * i) == 0 ? 0 : -mobuis[i]);
-            }
-        }
-    }
 }
