@@ -5,8 +5,9 @@ const int dy[] = {1, -1, 0, 0, 1, -1, 1, -1};
 
 void __attribute__((constructor)) calc();
 
+const char *file = "alimagde.in";
 #ifdef ONLINE_JUDGE
-freopen("lamps.in", "r", stdin);
+freopen(file, "r", stdin);
 #endif
 
 /**************   bit frequency from 1 to n ****************** */
