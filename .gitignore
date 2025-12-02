@@ -5,9 +5,9 @@
 a
 b
 stress_testing
-a.cpp
-b.cpp
-tmp.cpp
+
+/*.cpp
 
 in.txt
 out.txt
+

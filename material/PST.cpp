@@ -3,7 +3,7 @@ using namespace std;
 
 /* you can set opt to true if update is (assign or single point update)*/
 template <class node, int64_t LX = INT_MIN, int64_t RX = INT_MAX, bool opt = false>
-class seg_tree {
+class segment_tree {
     vector<node> seg;
     vector<int> roots = {0}, left = {0}, right = {0};
 
@@ -88,7 +88,7 @@ class seg_tree {
     }
 
 public:
-    seg_tree() { create_node(roots[0]); }
+    segment_tree() { create_node(roots[0]); }
 
     int cur_time() { return roots.size() - 1; }
 
